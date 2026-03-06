@@ -34,5 +34,5 @@ By participating in this project, you are expected to uphold our Code of Conduct
 ## Questions?
 Feel free to reach out to the project maintainer:
 - **Prakhar Doneria**
-- [LinkedIn](https://www.linkedin.com/in/prakhar-doneria/)
+- [LinkedIn](https://www.linkedin.com/in/prakhardoneria/)
 - [Instagram](https://instagram.com/prakhardoneria)
