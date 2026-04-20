@@ -3,16 +3,22 @@ from ai.question_engine import generate_question
 from ai.tts_engine import generate_voice
 from ai.report_engine import generate_report
 from models.interview import save_report
+from utils.validation import QuestionRequest, ReportRequest
+from pydantic import ValidationError
 
 ai_bp = Blueprint("ai", __name__)
 
 
 @ai_bp.route("/api/ai/question", methods=["POST"])
 def question():
-    data = request.json
-    role = data.get("role", "Software Developer")
-    answer = data.get("answer")
-    question_history = data.get("question_history", [])
+    try:
+        data = QuestionRequest(**request.get_json())
+    except (ValidationError, TypeError) as e:
+        return jsonify({"error": "Invalid input", "details": str(e)}), 400
+
+    role = data.role
+    answer = data.answer
+    question_history = data.question_history
 
     try:
         question_text = generate_question(role, answer, question_history)
@@ -28,10 +34,14 @@ def question():
 
 @ai_bp.route("/api/ai/report", methods=["POST"])
 def report():
-    data = request.json
-    role = data.get("role", "Software Developer")
-    qa_history = data.get("qa_history", [])
-    room_id = data.get("room_id")
+    try:
+        data = ReportRequest(**request.get_json())
+    except (ValidationError, TypeError) as e:
+        return jsonify({"error": "Invalid input", "details": str(e)}), 400
+
+    role = data.role
+    qa_history = data.qa_history
+    room_id = data.room_id
 
     try:
         report_text = generate_report(role, qa_history)
