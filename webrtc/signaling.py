@@ -21,10 +21,18 @@ def _count_in_room(room_id):
 
 def register_signaling_events(socketio):
 
+    def validate_room(data):
+        room = data.get("room")
+        if not room or not isinstance(room, str) or len(room) > 50:
+            return None
+        return room
+
     @socketio.on("join-room")
     def on_join(data):
         from flask import request as flask_request
-        room = data["room"]
+        room = validate_room(data)
+        if not room: return
+        
         sid = flask_request.sid
 
         join_room(room)
@@ -43,20 +51,28 @@ def register_signaling_events(socketio):
 
     @socketio.on("offer")
     def on_offer(data):
-        emit("offer", data, to=data["room"], include_self=False)
+        room = validate_room(data)
+        if not room: return
+        emit("offer", data, to=room, include_self=False)
 
     @socketio.on("answer")
     def on_answer(data):
-        emit("answer", data, to=data["room"], include_self=False)
+        room = validate_room(data)
+        if not room: return
+        emit("answer", data, to=room, include_self=False)
 
     @socketio.on("ice-candidate")
     def on_ice_candidate(data):
-        emit("ice-candidate", data, to=data["room"], include_self=False)
+        room = validate_room(data)
+        if not room: return
+        emit("ice-candidate", data, to=room, include_self=False)
 
     @socketio.on("leave-room")
     def on_leave(data):
         from flask import request as flask_request
-        room = data["room"]
+        room = validate_room(data)
+        if not room: return
+        
         sid = flask_request.sid
 
         leave_room(room)

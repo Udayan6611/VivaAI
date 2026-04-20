@@ -194,11 +194,16 @@ function displayReport(reportText) {
 
     if (reportEl) reportEl.style.display = "block";
     if (reportContent) {
-        // Format report with line breaks
-        reportContent.innerHTML = reportText
-            .split("\n")
-            .map(line => line.trim() ? `<p>${line}</p>` : "")
-            .join("");
+        // Clear previous content
+        reportContent.innerHTML = "";
+        // Format report with line breaks safely
+        reportText.split("\n").forEach(line => {
+            if (line.trim()) {
+                const p = document.createElement("p");
+                p.textContent = line.trim();
+                reportContent.appendChild(p);
+            }
+        });
     }
 
     // Scroll to report
