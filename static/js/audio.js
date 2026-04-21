@@ -5,6 +5,65 @@ let audioChunks = [];
 let isRecording = false;
 let recognition = null;
 let transcriptText = "";
+let interimTranscriptText = "";
+let speechRecognitionSupported = false;
+let currentRecordingMimeType = "audio/webm";
+
+function getRecorderMimeType() {
+    if (typeof MediaRecorder === "undefined" || typeof MediaRecorder.isTypeSupported !== "function") {
+        return "";
+    }
+
+    const preferred = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/ogg;codecs=opus",
+        "audio/ogg"
+    ];
+
+    return preferred.find(type => MediaRecorder.isTypeSupported(type)) || "";
+}
+
+function extensionFromMimeType(mimeType) {
+    const base = (mimeType || "").split(";", 1)[0].toLowerCase();
+    const map = {
+        "audio/webm": "webm",
+        "video/webm": "webm",
+        "audio/mp4": "mp4",
+        "audio/ogg": "ogg",
+        "audio/wav": "wav",
+        "audio/x-wav": "wav",
+        "audio/mpeg": "mp3",
+        "audio/mp3": "mp3"
+    };
+    return map[base] || "webm";
+}
+
+async function transcribeRecordedAudio(audioBlob) {
+    try {
+        const formData = new FormData();
+        const ext = extensionFromMimeType(audioBlob.type);
+        formData.append("audio", audioBlob, `answer.${ext}`);
+
+        const response = await fetch("/api/ai/transcribe", {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || "Transcription API error");
+        }
+
+        const data = await response.json();
+        return (data.transcript || "").trim();
+    } catch (err) {
+        console.warn("[Audio] Backend transcription failed:", err);
+        showStatus("Auto transcription failed. You can type your answer to continue.", "warning");
+        return "";
+    }
+}
 
 // ── Speech Recognition (Web Speech API) ──────────────────
 
@@ -12,10 +71,12 @@ function initSpeechRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
         console.warn("[Audio] Speech Recognition not supported in this browser.");
+        speechRecognitionSupported = false;
         return null;
     }
 
     recognition = new SpeechRecognition();
+    speechRecognitionSupported = true;
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-IN";
@@ -34,6 +95,7 @@ function initSpeechRecognition() {
         }
 
         if (final) transcriptText += final;
+        interimTranscriptText = interim;
 
         const liveEl = document.getElementById("liveTranscript");
         if (liveEl) {
@@ -69,18 +131,29 @@ async function startRecording() {
     try {
         let stream;
         // Try to reuse existing localStream from webrtc.js if available
-        if (typeof localStream !== "undefined" && localStream && localStream.getAudioTracks().length > 0) {
+        if (
+            typeof localStream !== "undefined" &&
+            localStream &&
+            localStream.getAudioTracks().length > 0 &&
+            localStream.getAudioTracks()[0].enabled
+        ) {
             // Create a new stream with only the audio tracks to avoid MediaRecorder conflicts
             stream = new MediaStream(localStream.getAudioTracks());
             stream.isReused = true;
         } else {
+            // If interview audio track is muted/disabled, request a fresh mic stream for answers.
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         }
 
         audioChunks = [];
         transcriptText = "";
+        interimTranscriptText = "";
 
-        mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+        const recorderMimeType = getRecorderMimeType();
+        mediaRecorder = recorderMimeType
+            ? new MediaRecorder(stream, { mimeType: recorderMimeType })
+            : new MediaRecorder(stream);
+        currentRecordingMimeType = mediaRecorder.mimeType || recorderMimeType || "audio/webm";
 
         mediaRecorder.ondataavailable = event => {
             if (event.data.size > 0) audioChunks.push(event.data);
@@ -93,6 +166,8 @@ async function startRecording() {
         if (!recognition) initSpeechRecognition();
         if (recognition) {
             try { recognition.start(); } catch (e) { }
+        } else {
+            showStatus("Speech-to-text is not supported in this browser. You can still record, then type your answer if needed.", "warning");
         }
 
         // Update UI
@@ -129,8 +204,27 @@ async function stopRecording() {
 
     return new Promise((resolve) => {
         mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-            const answer = transcriptText.trim() || "[No speech detected]";
+            const audioBlob = new Blob(audioChunks, { type: currentRecordingMimeType });
+            const liveText = (document.getElementById("liveTranscript")?.textContent || "").trim();
+            let answer = (transcriptText + " " + interimTranscriptText).trim() || liveText;
+
+            // If browser recognition misses speech, use backend STT on recorded audio.
+            if (!answer) {
+                answer = await transcribeRecordedAudio(audioBlob);
+            }
+
+            if (!answer) {
+                const fallback = window.prompt(
+                    speechRecognitionSupported
+                        ? "We could not clearly capture your speech. Type your answer and submit:"
+                        : "Your browser could not transcribe speech. Type your answer to continue:"
+                );
+                answer = (fallback || "").trim();
+            }
+
+            if (!answer) {
+                answer = "I need a moment to gather my thoughts.";
+            }
 
             console.log("[Audio] Recorded answer:", answer);
 
