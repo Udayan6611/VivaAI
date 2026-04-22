@@ -1,3 +1,5 @@
+import inspect
+
 from sarvamai import SarvamAI
 from config import Config
 from utils.sanitization import sanitize_model_output
@@ -5,6 +7,15 @@ from utils.sanitization import sanitize_model_output
 
 def get_client():
     return SarvamAI(api_subscription_key=Config.SARVAM_API_KEY)
+
+
+def _chat_completions(client, **kwargs):
+    signature = inspect.signature(client.chat.completions)
+    if "model" in signature.parameters:
+        return client.chat.completions(**kwargs)
+
+    kwargs.pop("model", None)
+    return client.chat.completions(**kwargs)
 
 
 def generate_report(role, qa_history):
@@ -33,12 +44,13 @@ Provide a detailed evaluation with:
 Be fair, constructive and professional.
 Never include hidden reasoning, analysis, or any XML-like tags such as <think> or </think>."""
 
-    response = client.chat.completions(
-        model=Config.SARVAM_CHAT_MODEL,
+    response = _chat_completions(
+        client,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
         top_p=1,
-        max_tokens=600
+        max_tokens=600,
+        model=Config.SARVAM_CHAT_MODEL,
     )
 
     return sanitize_model_output(response.choices[0].message.content)
