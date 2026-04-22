@@ -2,7 +2,9 @@ from flask import Blueprint, request, jsonify
 from ai.question_engine import generate_question
 from ai.tts_engine import generate_voice
 from ai.report_engine import generate_report
+from ai.stt_engine import transcribe_audio
 from models.interview import save_report
+from utils.sanitization import sanitize_model_output
 from utils.validation import QuestionRequest, ReportRequest
 from pydantic import ValidationError
 
@@ -21,7 +23,7 @@ def question():
     question_history = data.question_history
 
     try:
-        question_text = generate_question(role, answer, question_history)
+        question_text = sanitize_model_output(generate_question(role, answer, question_history))
         audio_url = generate_voice(question_text)
 
         return jsonify({
@@ -44,12 +46,34 @@ def report():
     room_id = data.room_id
 
     try:
-        report_text = generate_report(role, qa_history)
+        report_text = sanitize_model_output(generate_report(role, qa_history))
 
         if room_id:
             import json
             save_report(room_id, report_text, json.dumps(qa_history))
 
         return jsonify({"report": report_text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@ai_bp.route("/api/ai/transcribe", methods=["POST"])
+def transcribe():
+    file = request.files.get("audio")
+    if not file:
+        return jsonify({"error": "Missing audio file"}), 400
+
+    try:
+        audio_bytes = file.read()
+        if not audio_bytes:
+            return jsonify({"error": "Empty audio file"}), 400
+
+        transcript = transcribe_audio(
+            audio_bytes,
+            filename=file.filename or "answer.webm",
+            content_type=file.content_type or "audio/webm",
+        )
+
+        return jsonify({"transcript": sanitize_model_output(transcript)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
