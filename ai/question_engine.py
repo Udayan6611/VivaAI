@@ -36,9 +36,9 @@ Return ONLY the greeting + question text, nothing else."""
 
     response = client.chat.completions(
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.6,
+        temperature=0.3,
         top_p=1,
         max_tokens=250
     )
 
-    return response.choices[0].message.content
+    return response.choices[0].message.contentpyt
