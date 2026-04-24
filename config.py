@@ -8,6 +8,10 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "vivaai-secret")
 
     SARVAM_API_KEY = os.environ.get("SARVAM_API_KEY", "")
+    SARVAM_CHAT_MODEL = os.environ.get("SARVAM_CHAT_MODEL", "sarvam-m")
+    SARVAM_STT_MODEL = os.environ.get("SARVAM_STT_MODEL", "saarika:v2.5")
+    SARVAM_STT_LANGUAGE = os.environ.get("SARVAM_STT_LANGUAGE", "en-IN")
+    SARVAM_STT_CODEC = os.environ.get("SARVAM_STT_CODEC", "webm")
 
     DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
 

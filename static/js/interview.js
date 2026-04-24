@@ -11,6 +11,19 @@ let roleValue = "Software Developer";
 const MAX_QUESTIONS = 6;
 const DURATION_SECONDS = 600; // 10 minutes
 
+function sanitizeAiText(text) {
+    if (!text) return "";
+
+    let cleaned = String(text);
+    cleaned = cleaned.replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, "");
+    cleaned = cleaned.replace(/<analysis\b[^>]*>[\s\S]*?<\/analysis>/gi, "");
+    cleaned = cleaned.replace(/<reasoning\b[^>]*>[\s\S]*?<\/reasoning>/gi, "");
+    cleaned = cleaned.replace(/<\/?(think|analysis|reasoning)\b[^>]*>/gi, "");
+    cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+
+    return cleaned.trim();
+}
+
 // ── Init ─────────────────────────────────────────────────
 
 function initInterview() {
@@ -77,7 +90,7 @@ async function fetchNextQuestion(answerText) {
         }
 
         const data = await response.json();
-        currentQuestion = data.question;
+        currentQuestion = sanitizeAiText(data.question);
         questionCount++;
 
         // Store in history (answer will be added when user responds)
@@ -178,7 +191,7 @@ async function endInterview() {
         const data = await response.json();
 
         if (data.report) {
-            displayReport(data.report);
+            displayReport(sanitizeAiText(data.report));
         }
     } catch (err) {
         console.error("[Interview] Report error:", err);
