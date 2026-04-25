@@ -1,6 +1,6 @@
-/* VivaAI — Premium Design System */
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* VivaAI — Premium Design System */
 
 /* ── Tokens ─────────────────────────────────────────── */
 :root {
@@ -35,6 +35,92 @@
     --shadow-glow: 0 0 40px rgba(59,130,246,.15);
 
     --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Light Theme ─────────────────────────────────────── */
+[data-theme="light"] {
+    --bg-base:      #f0f4f8;
+    --bg-card:      #ffffff;
+    --bg-elevated:  #e8edf5;
+    --bg-hover:     #d8e2f0;
+
+    --accent:       #3b82f6;
+    --accent-glow:  #3b82f640;
+    --accent-dark:  #1d4ed8;
+    --accent-light: #2563eb;
+
+    --text-primary:   #0f172a;
+    --text-secondary: #475569;
+    --text-muted:     #94a3b8;
+
+    --border:       #cbd5e1;
+    --border-light: #94a3b840;
+
+    --shadow-card: 0 1px 3px rgba(0,0,0,.1), 0 8px 32px rgba(0,0,0,.08);
+    --shadow-glow: 0 0 40px rgba(59,130,246,.12);
+}
+
+[data-theme="light"] body::before {
+    background:
+        radial-gradient(ellipse 80% 60% at 20% 0%, #bfdbfe50 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 100%, #dbeafe40 0%, transparent 60%);
+}
+
+[data-theme="light"] .header {
+    background: rgba(240, 244, 248, 0.92);
+}
+
+[data-theme="light"] audio {
+    filter: none;
+    opacity: 1;
+}
+
+/* ── Light Theme Text Fixes ──────────────────────────── */
+[data-theme="light"] .hero-title {
+    background: linear-gradient(135deg, #1e3a8a 30%, #3b82f6 70%, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+[data-theme="light"] .logo-text {
+    background: linear-gradient(135deg, #1e293b 30%, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+[data-theme="light"] .hero-eyebrow {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #1d4ed8;
+}
+
+[data-theme="light"] .hero-subtitle {
+    color: #475569;
+}
+
+/* ── Theme Toggle ────────────────────────────────────── */
+.theme-toggle {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+    transform: rotate(20deg);
 }
 
 /* ── Reset ───────────────────────────────────────────── */
@@ -697,8 +783,4 @@ audio {
     .hero { padding: 48px 0 32px; }
     .control-bar { gap: 8px; }
     .btn { padding: 9px 16px; font-size: 0.825rem; }
-}
-.btn:hover {
-    transform: scale(1.05);
-    transition: 0.2s ease;
 }

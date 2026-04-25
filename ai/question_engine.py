@@ -51,7 +51,7 @@ Return ONLY the greeting + question text, nothing else."""
     response = _chat_completions(
         client,
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.6,
+        temperature=0.3,
         top_p=1,
         max_tokens=250,
         model=Config.SARVAM_CHAT_MODEL,
