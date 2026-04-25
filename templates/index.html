@@ -4,121 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="VivaAI — AI-powered real-time video call interview platform. Practice technical and HR interviews with an intelligent AI interviewer.">
-    <title>VivaAI — AI Interview Platform</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-
-<body>
-
-    <header class="header">
-        <a class="logo" href="/">
-            <div class="logo-icon">🤖</div>
-            <span class="logo-text">VivaAI</span>
-        </a>
-        <div style="display:flex; align-items:center; gap:10px;">
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
-    <span class="header-badge">Beta</span>
-</div>
-    </header>
-
-    <main>
-        <section class="hero container">
-            <div class="hero-eyebrow">
-                <span>✦</span> AI-Powered Interview Platform
-            </div>
-            <h1 class="hero-title">Ace Your Next Interview<br>with AI</h1>
-            <p class="hero-subtitle">
-                Practice real-time video interviews with an AI interviewer that adapts to your answers, gives voice
-                feedback, and generates detailed performance reports.
-            </p>
-
-            <!-- Create Interview Card -->
-            <div class="card create-card fade-in">
-                <h2 style="margin-bottom: 24px; font-size: 1.4rem;">Start an Interview</h2>
-
-                <div id="statusMsg" class="status-msg"></div>
-
-                <div class="form-group">
-                    <label class="form-label" for="candidateName">Your Name</label>
-                    <input class="form-input" id="candidateName" type="text" placeholder="e.g. Priya Sharma"
-                        autocomplete="name">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="role">Target Role</label>
-                    <select class="form-input" id="role">
-                        <option value="Software Engineer">Software Engineer</option>
-                        <option value="Frontend Developer">Frontend Developer</option>
-                        <option value="Backend Developer">Backend Developer</option>
-                        <option value="Full Stack Developer">Full Stack Developer</option>
-                        <option value="Data Scientist">Data Scientist</option>
-                        <option value="Machine Learning Engineer">Machine Learning Engineer</option>
-                        <option value="DevOps Engineer">DevOps Engineer</option>
-                        <option value="Product Manager">Product Manager</option>
-                        <option value="UI/UX Designer">UI/UX Designer</option>
-                        <option value="Business Analyst">Business Analyst</option>
-                        <option value="Data Analyst">Data Analyst</option>
-                        <option value="Cybersecurity Engineer">Cybersecurity Engineer</option>
-                        <option value="Cloud Architect">Cloud Architect</option>
-                    </select>
-                </div>
-
-                <!-- Mic Test Section -->
-                <div class="form-group mic-test-group"
-                    style="text-align: center; border: 1px dashed rgba(255,255,255,0.2); padding: 16px; border-radius: 8px;">
-                    <label class="form-label" style="text-align: left;">Audio Test (Optional)</label>
-                    <button class="btn btn-ghost" id="testMicBtn" onclick="testMicrophone()" type="button"
-                        style="width: 100%; border: 1px solid var(--border-color);">
-                        🎤 Test Microphone
-                    </button>
-                    <div id="micMeterControls" style="display: none;">
-                        <span
-                            style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Speak
-                            to test your microphone</span>
-                        <div
-                            style="width: 100%; height: 10px; background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                            <div id="micVolumeBar"
-                                style="height: 100%; width: 0%; background: var(--success); transition: width 0.05s ease;">
-                            </div>
-                        </div>
-                        <button class="btn btn-ghost btn-sm" onclick="stopMicTest()" type="button"
-                            style="color: var(--danger);">Stop Test</button>
-                    </div>
-                </div>
-
-                <button class="btn btn-primary btn-lg" id="startBtn" onclick="createInterview()" style="width: 100%;">
-                    🚀 Start Interview Session
-                </button>
-
-                <p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 14px;">
-                    A shareable room link will be generated for your interviewer.
-                </p>
-            </div>
-
-            <!-- Features -->
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🎥</div>
-                    <div class="feature-title">Real-Time Video</div>
-                    <div class="feature-desc">Browser WebRTC — no installs needed</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🗣️</div>
-                    <div class="feature-title">AI Voice Questions</div>
-                    <div class="feature-desc">Natural TTS powered by Sarvam AI</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <div class="feature-title">Instant Reports</div>
-                    <div class="feature-desc">Detailed performance evaluation after each session</div>
-                </div>
-            </div>
-        </section>
-    </main>
-
     <script>
+        // Apply saved theme on load
+        (function() {
+            const saved = localStorage.getItem("vivaai-theme") || "dark";
+            document.documentElement.setAttribute("data-theme", saved);
+            const btn = document.getElementById("themeToggle");
+            if (btn) btn.textContent = saved === "light" ? "☀️" : "🌙";
+        })();
         function showStatus(msg, type = "info") {
             const el = document.getElementById("statusMsg");
             let icon = "";
@@ -285,7 +178,132 @@ el.textContent = icon + msg;
 window.onload = () => {
     document.getElementById("candidateName").focus();
 };
+
+// Theme toggle
+function toggleTheme() {
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const isDark = html.getAttribute("data-theme") !== "light";
+    html.setAttribute("data-theme", isDark ? "light" : "dark");
+    btn.textContent = isDark ? "☀️" : "🌙";
+    localStorage.setItem("vivaai-theme", isDark ? "light" : "dark");
+}
+
     </script>
+    <meta name="description"
+    content="VivaAI — AI-powered real-time video call interview platform. Practice technical and HR interviews with an intelligent AI interviewer.">
+    <title>VivaAI — AI Interview Platform</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <a class="logo" href="/">
+            <div class="logo-icon">🤖</div>
+            <span class="logo-text">VivaAI</span>
+        </a>
+        <div style="display:flex; align-items:center; gap:10px;">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+    <span class="header-badge">Beta</span>
+</div>
+    </header>
+
+    <main>
+        <section class="hero container">
+            <div class="hero-eyebrow">
+                <span>✦</span> AI-Powered Interview Platform
+            </div>
+            <h1 class="hero-title">Ace Your Next Interview<br>with AI</h1>
+            <p class="hero-subtitle">
+                Practice real-time video interviews with an AI interviewer that adapts to your answers, gives voice
+                feedback, and generates detailed performance reports.
+            </p>
+
+            <!-- Create Interview Card -->
+            <div class="card create-card fade-in">
+                <h2 style="margin-bottom: 24px; font-size: 1.4rem;">Start an Interview</h2>
+
+                <div id="statusMsg" class="status-msg"></div>
+
+                <div class="form-group">
+                    <label class="form-label" for="candidateName">Your Name</label>
+                    <input class="form-input" id="candidateName" type="text" placeholder="e.g. Priya Sharma"
+                        autocomplete="name">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="role">Target Role</label>
+                    <select class="form-input" id="role">
+                        <option value="Software Engineer">Software Engineer</option>
+                        <option value="Frontend Developer">Frontend Developer</option>
+                        <option value="Backend Developer">Backend Developer</option>
+                        <option value="Full Stack Developer">Full Stack Developer</option>
+                        <option value="Data Scientist">Data Scientist</option>
+                        <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+                        <option value="DevOps Engineer">DevOps Engineer</option>
+                        <option value="Product Manager">Product Manager</option>
+                        <option value="UI/UX Designer">UI/UX Designer</option>
+                        <option value="Business Analyst">Business Analyst</option>
+                        <option value="Data Analyst">Data Analyst</option>
+                        <option value="Cybersecurity Engineer">Cybersecurity Engineer</option>
+                        <option value="Cloud Architect">Cloud Architect</option>
+                    </select>
+                </div>
+
+                <!-- Mic Test Section -->
+                <div class="form-group mic-test-group"
+                    style="text-align: center; border: 1px dashed rgba(255,255,255,0.2); padding: 16px; border-radius: 8px;">
+                    <label class="form-label" style="text-align: left;">Audio Test (Optional)</label>
+                    <button class="btn btn-ghost" id="testMicBtn" onclick="testMicrophone()" type="button"
+                        style="width: 100%; border: 1px solid var(--border-color);">
+                        🎤 Test Microphone
+                    </button>
+                    <div id="micMeterControls" style="display: none;">
+                        <span
+                            style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Speak
+                            to test your microphone</span>
+                        <div
+                            style="width: 100%; height: 10px; background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                            <div id="micVolumeBar"
+                                style="height: 100%; width: 0%; background: var(--success); transition: width 0.05s ease;">
+                            </div>
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="stopMicTest()" type="button"
+                            style="color: var(--danger);">Stop Test</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-lg" id="startBtn" onclick="createInterview()" style="width: 100%;">
+                    🚀 Start Interview Session
+                </button>
+
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 14px;">
+                    A shareable room link will be generated for your interviewer.
+                </p>
+            </div>
+            
+            <!-- Features -->
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎥</div>
+                    <div class="feature-title">Real-Time Video</div>
+                    <div class="feature-desc">Browser WebRTC — no installs needed</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🗣️</div>
+                    <div class="feature-title">AI Voice Questions</div>
+                    <div class="feature-desc">Natural TTS powered by Sarvam AI</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Instant Reports</div>
+                    <div class="feature-desc">Detailed performance evaluation after each session</div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
 
 </body>
 

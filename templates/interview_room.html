@@ -4,6 +4,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+        // Apply saved theme immediately on load
+        (function () {
+            const saved = localStorage.getItem("vivaai-theme") || "dark";
+            document.documentElement.setAttribute("data-theme", saved);
+            const btn = document.getElementById("themeToggle");
+            if (btn) btn.textContent = saved === "light" ? "☀️" : "🌙";
+        })();
+        async function requestPermissions() {
+            const btn = document.querySelector("#permissionModal .btn");
+            btn.disabled = true;
+            btn.textContent = "Requesting Access...";
+            const errEl = document.getElementById("modalError");
+            errEl.style.display = "none";
+
+            // Check if context is secure
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                errEl.innerHTML = "<strong>Access Not Supported:</strong> Your browser requires a secure context (HTTPS or localhost) for media access. Please check your URL.";
+                errEl.style.display = "block";
+                btn.disabled = false;
+                btn.textContent = "Grant Permissions & Join Room";
+                return;
+            }
+
+            showStatus("Waiting for permission…", "warning");
+            const ok = await startMedia();
+            
+            if (ok) {
+                document.getElementById("permissionModal").style.display = "none";
+                joinRoom(roomId);
+                showStatus("Camera ready. Waiting for connection…", "success");
+            } else {
+                errEl.innerHTML = "<strong>Permission Denied.</strong> Please check your browser address bar to allow access and try again.";
+                errEl.style.display = "block";
+                btn.disabled = false;
+                btn.textContent = "Try Again";
+            }
+        }
+    
+    // Theme toggle
+    function toggleTheme() {
+        const html = document.documentElement;
+        const btn = document.getElementById("themeToggle");
+        const isDark = html.getAttribute("data-theme") !== "light";
+        html.setAttribute("data-theme", isDark ? "light" : "dark");
+        btn.textContent = isDark ? "☀️" : "🌙";
+        localStorage.setItem("vivaai-theme", isDark ? "light" : "dark");
+    }
+
+
+    </script>
     <meta name="description" content="VivaAI Interview Room — Real-time AI-powered video interview session">
     <title>VivaAI Interview Room</title>
     <link rel="stylesheet" href="/static/css/style.css">
@@ -202,59 +253,8 @@
             text-align: center;
             animation: fadeInDown 0.4s ease;
         }
-    </style>
+        </style>
 
-    <script>
-        async function requestPermissions() {
-            const btn = document.querySelector("#permissionModal .btn");
-            btn.disabled = true;
-            btn.textContent = "Requesting Access...";
-            const errEl = document.getElementById("modalError");
-            errEl.style.display = "none";
-
-            // Check if context is secure
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                errEl.innerHTML = "<strong>Access Not Supported:</strong> Your browser requires a secure context (HTTPS or localhost) for media access. Please check your URL.";
-                errEl.style.display = "block";
-                btn.disabled = false;
-                btn.textContent = "Grant Permissions & Join Room";
-                return;
-            }
-
-            showStatus("Waiting for permission…", "warning");
-            const ok = await startMedia();
-            
-            if (ok) {
-                document.getElementById("permissionModal").style.display = "none";
-                joinRoom(roomId);
-                showStatus("Camera ready. Waiting for connection…", "success");
-            } else {
-                errEl.innerHTML = "<strong>Permission Denied.</strong> Please check your browser address bar to allow access and try again.";
-                errEl.style.display = "block";
-                btn.disabled = false;
-                btn.textContent = "Try Again";
-            }
-        }
-    
-    // Theme toggle
-    function toggleTheme() {
-        const html = document.documentElement;
-        const btn = document.getElementById("themeToggle");
-        const isDark = html.getAttribute("data-theme") !== "light";
-        html.setAttribute("data-theme", isDark ? "light" : "dark");
-        btn.textContent = isDark ? "☀️" : "🌙";
-        localStorage.setItem("vivaai-theme", isDark ? "light" : "dark");
-    }
-
-    // Apply saved theme immediately on load
-    (function () {
-        const saved = localStorage.getItem("vivaai-theme") || "dark";
-        document.documentElement.setAttribute("data-theme", saved);
-        const btn = document.getElementById("themeToggle");
-        if (btn) btn.textContent = saved === "light" ? "☀️" : "🌙";
-    })();
-
-    </script>
 
 </body>
 
